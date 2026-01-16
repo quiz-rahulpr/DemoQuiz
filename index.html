@@ -6,7 +6,7 @@
     <title>Quiz Portal</title>
     <script src="questions.js"></script>
     <style>
-        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --gray: #e2e8f0; --dark: #0f172a; }
+        :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --gray: #e2e8f0; --dark: #0f172a; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f8fafc; color: var(--dark); -webkit-tap-highlight-color: transparent; }
 
         /* Header */
@@ -64,11 +64,13 @@
         .review-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--gray); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .review-option { padding: 10px; border: 1px solid var(--gray); margin: 5px 0; border-radius: 6px; color: #64748b; font-size: 0.9rem; }
         
-        /* New Color Classes for Review */
+        /* Review Colors */
         .review-correct { border: 2px solid var(--success); background: #dcfce7; color: var(--success); font-weight: bold; }
         .review-wrong { border: 2px solid var(--danger); background: #fee2e2; color: var(--danger); font-weight: bold; }
-
-        .q-text-review { font-weight: bold; margin-bottom: 10px; display: block; }
+        
+        .q-header-review { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .q-text-review { font-weight: bold; display: block; flex: 1; margin-right: 10px; }
+        .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -118,16 +120,19 @@
     </div>
 
     <div id="final-screen" class="container">
-        <div style="font-size: 4rem; margin-bottom: 10px;">✅</div>
+        <div style="font-size: 4rem; margin-bottom: 10px;">🏆</div>
         <div id="final-msg-container"></div>
     </div>
 
     <div id="review-screen" class="container">
         <h2 style="text-align: center; color: var(--primary); margin-top: 10px;">Your Responses</h2>
-        <div style="text-align: center; margin-bottom: 15px; font-size: 0.8rem;">
-            <span style="color:var(--success); font-weight:bold;">✔ Correct Answer</span> &nbsp;&nbsp; 
-            <span style="color:var(--danger); font-weight:bold;">✖ Your Wrong Answer</span>
+        
+        <div style="text-align: center; margin-bottom: 15px; font-size: 0.8rem; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;">
+            <span style="color:var(--success); font-weight:bold;">✔ Correct</span>
+            <span style="color:var(--danger); font-weight:bold;">✖ Wrong</span>
+            <span style="color:var(--warning); font-weight:bold;">⚠ Unattempted</span>
         </div>
+
         <div id="review-list"></div>
         <div style="margin-top: 20px;">
             <button class="btn-prev" style="width:100%" onclick="location.reload()">Close / Exit</button>
@@ -255,21 +260,43 @@
             list.innerHTML = '';
 
             quizQuestions.forEach((q, i) => {
+                const userAns = userAnswers[i];
+                const isCorrect = userAns === q.correct;
+                const isUnattempted = userAns === null;
+
+                // Determine Badge Text & Color
+                let badgeText = "";
+                let badgeColor = "";
+
+                if(isUnattempted) {
+                    badgeText = "⚠ Unattempted";
+                    badgeColor = "color: var(--warning); background: #fffbeb; border: 1px solid var(--warning);";
+                } else if(isCorrect) {
+                    badgeText = "✔ Correct";
+                    badgeColor = "color: var(--success); background: #dcfce7; border: 1px solid var(--success);";
+                } else {
+                    badgeText = "✖ Wrong";
+                    badgeColor = "color: var(--danger); background: #fee2e2; border: 1px solid var(--danger);";
+                }
+
                 let cardHtml = `<div class="review-card">
-                    <span class="q-text-review">Q${i+1}: ${q.question}</span>`;
+                    <div class="q-header-review">
+                        <span class="q-text-review">Q${i+1}: ${q.question}</span>
+                        <span class="status-badge" style="${badgeColor}">${badgeText}</span>
+                    </div>`;
                 
                 q.options.forEach((opt, optIdx) => {
-                    const isSelected = userAnswers[i] === optIdx;
-                    const isCorrect = q.correct === optIdx;
+                    const isSelected = userAns === optIdx;
+                    const isActualCorrect = q.correct === optIdx;
                     
                     let styleClass = 'review-option';
                     let icon = '○ ';
 
-                    if (isCorrect) {
-                        styleClass += ' review-correct'; // Green
+                    if (isActualCorrect) {
+                        styleClass += ' review-correct'; // Always show Correct Green
                         icon = '✔ ';
                     } else if (isSelected) {
-                        styleClass += ' review-wrong'; // Red
+                        styleClass += ' review-wrong'; // Show Wrong Red
                         icon = '✖ ';
                     }
                     
