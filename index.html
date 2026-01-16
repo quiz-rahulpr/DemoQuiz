@@ -1,15 +1,3 @@
-Here is the updated code.
-
-**Changes made:**
-
-1. **Modified `#final-screen`:** It now displays the specific message: *"Hi [Name], Your mark has been submitted. Ranklist will be soon available"* and hides the immediate score display to fit your request.
-2. **Added "View Your Response" Button:** This button appears on the final screen.
-3. **Added Review Logic:** A new function `showReview()` generates a list of questions showing exactly what option the user selected (marked with blue/bold).
-4. **Preserved Core:** `questions.js` (referenced as `quizQuestions`) is untouched, and the overall UI style remains identical.
-
-You can copy-paste this entire code into your main file.
-
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,7 +63,11 @@ You can copy-paste this entire code into your main file.
         /* Review Section Styles */
         .review-card { background: white; padding: 15px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--gray); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .review-option { padding: 10px; border: 1px solid var(--gray); margin: 5px 0; border-radius: 6px; color: #64748b; font-size: 0.9rem; }
-        .review-selected { border: 2px solid var(--primary); background: #f0f9ff; color: var(--primary); font-weight: bold; }
+        
+        /* New Color Classes for Review */
+        .review-correct { border: 2px solid var(--success); background: #dcfce7; color: var(--success); font-weight: bold; }
+        .review-wrong { border: 2px solid var(--danger); background: #fee2e2; color: var(--danger); font-weight: bold; }
+
         .q-text-review { font-weight: bold; margin-bottom: 10px; display: block; }
     </style>
 </head>
@@ -132,6 +124,10 @@ You can copy-paste this entire code into your main file.
 
     <div id="review-screen" class="container">
         <h2 style="text-align: center; color: var(--primary); margin-top: 10px;">Your Responses</h2>
+        <div style="text-align: center; margin-bottom: 15px; font-size: 0.8rem;">
+            <span style="color:var(--success); font-weight:bold;">✔ Correct Answer</span> &nbsp;&nbsp; 
+            <span style="color:var(--danger); font-weight:bold;">✖ Your Wrong Answer</span>
+        </div>
         <div id="review-list"></div>
         <div style="margin-top: 20px;">
             <button class="btn-prev" style="width:100%" onclick="location.reload()">Close / Exit</button>
@@ -222,7 +218,7 @@ You can copy-paste this entire code into your main file.
             if(timeLeft > 0 && !confirm("Finish and submit your answers?")) return;
             clearInterval(timerInterval);
             
-            // Score Calculation (Kept internal for form submission)
+            // Score Calculation
             let score = 0;
             userAnswers.forEach((ans, i) => {
                 if(ans === null) return;
@@ -238,11 +234,9 @@ You can copy-paste this entire code into your main file.
             const formUrl = `https://docs.google.com/forms/d/e/${FORM_ID}/formResponse?${ENTRY_NAME}=${encodeURIComponent(name)}&${ENTRY_SCORE}=${finalScore}&${ENTRY_TIME}=${timeTaken}&submit=Submit`;
             fetch(formUrl, { mode: 'no-cors' });
             
-            // Switch UI
             document.getElementById('quiz-screen').classList.remove('active');
             document.getElementById('final-screen').classList.add('active');
 
-            // Set the specific message requested
             document.getElementById('final-msg-container').innerHTML = `
                 <h2 style="margin: 0 0 20px 0; color: var(--dark);">Hi ${name}</h2>
                 <p style="color: #475569; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px;">
@@ -265,12 +259,19 @@ You can copy-paste this entire code into your main file.
                     <span class="q-text-review">Q${i+1}: ${q.question}</span>`;
                 
                 q.options.forEach((opt, optIdx) => {
-                    // Check if this option was selected by user
                     const isSelected = userAnswers[i] === optIdx;
+                    const isCorrect = q.correct === optIdx;
                     
-                    // Styling
-                    const styleClass = isSelected ? 'review-option review-selected' : 'review-option';
-                    const icon = isSelected ? '● ' : '○ ';
+                    let styleClass = 'review-option';
+                    let icon = '○ ';
+
+                    if (isCorrect) {
+                        styleClass += ' review-correct'; // Green
+                        icon = '✔ ';
+                    } else if (isSelected) {
+                        styleClass += ' review-wrong'; // Red
+                        icon = '✖ ';
+                    }
                     
                     cardHtml += `<div class="${styleClass}">${icon} ${opt}</div>`;
                 });
@@ -284,5 +285,3 @@ You can copy-paste this entire code into your main file.
     </script>
 </body>
 </html>
-
-```
