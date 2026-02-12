@@ -4,11 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quiz Portal</title>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <script src="questions.js"></script>
     <style>
         :root { --primary: #2563eb; --success: #22c55e; --danger: #ef4444; --warning: #f59e0b; --gray: #e2e8f0; --dark: #0f172a; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f8fafc; color: var(--dark); -webkit-tap-highlight-color: transparent; position: relative; min-height: 100vh;}
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f8fafc; color: var(--dark); -webkit-tap-highlight-color: transparent; }
 
         /* Header */
         .header { 
@@ -42,7 +41,7 @@
         .nav-dot.current { border: 2px solid black; background: #f1f5f9; }
 
         /* Quiz UI */
-        .container { padding: 16px; max-width: 600px; margin: auto; position: relative; z-index: 10; } /* Added z-index to sit above watermark */
+        .container { padding: 16px; max-width: 600px; margin: auto; }
         .question-card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid var(--gray); }
         .option-item { padding: 14px; margin: 10px 0; border: 2px solid var(--gray); border-radius: 10px; display: flex; align-items: center; cursor: pointer; transition: 0.1s; }
         .option-item input { width: 20px; height: 20px; margin-right: 12px; flex-shrink: 0; }
@@ -72,33 +71,9 @@
         .q-header-review { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
         .q-text-review { font-weight: bold; display: block; flex: 1; margin-right: 10px; }
         .status-badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 4px; font-weight: bold; white-space: nowrap; }
-
-        /* ADDED: Watermark Styles */
-        .watermark-container {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%) rotate(-45deg);
-            z-index: 0;
-            pointer-events: none;
-            width: 100%;
-            text-align: center;
-        }
-        .watermark-text {
-            font-size: 8vw; /* Responsive font size */
-            font-weight: 900;
-            color: rgba(0, 0, 0, 0.05); /* Very transparent gray */
-            text-transform: uppercase;
-            white-space: nowrap;
-            user-select: none;
-        }
     </style>
 </head>
 <body>
-
-    <div class="watermark-container">
-        <div class="watermark-text">ScoreCorrectPSC</div>
-    </div>
 
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
@@ -267,9 +242,6 @@
             document.getElementById('quiz-screen').classList.remove('active');
             document.getElementById('final-screen').classList.add('active');
 
-            // ADDED: Trigger Confetti for 1 Second
-            launchConfetti();
-
             document.getElementById('final-msg-container').innerHTML = `
                 <h2 style="margin: 0 0 20px 0; color: var(--dark);">Hi ${name}</h2>
                 <p style="color: #475569; font-size: 1.1rem; line-height: 1.6; margin-bottom: 30px;">
@@ -278,33 +250,6 @@
                 </p>
                 <button class="btn-next" onclick="showReview()">View Your Response</button>
             `;
-        }
-
-        // ADDED: Confetti Function
-        function launchConfetti() {
-            var duration = 1000; // 1 second
-            var end = Date.now() + duration;
-
-            (function frame() {
-                // launch a few confetti from the left edge
-                confetti({
-                    particleCount: 5,
-                    angle: 60,
-                    spread: 55,
-                    origin: { x: 0 }
-                });
-                // and launch a few from the right edge
-                confetti({
-                    particleCount: 5,
-                    angle: 120,
-                    spread: 55,
-                    origin: { x: 1 }
-                });
-
-                if (Date.now() < end) {
-                    requestAnimationFrame(frame);
-                }
-            }());
         }
 
         function showReview() {
